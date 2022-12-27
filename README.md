@@ -36,6 +36,22 @@ This library is simply to force NestJS controllers to implement a ts-rest contra
 npm i @ts-rest/core nestjs-rest-contracts
 ```
 
+## TODO
+- [] Ensure all entire contract has been implemented
+- [] `ContractModule` - could be used for things like automatically creating a swagger doc + route if enabled. E.g. 
+```typescript
+@Module({
+  imports: [ContractModule.forRoot({
+    openApi: {
+      enabled: true
+    }
+  })]
+})
+export class AppModule {
+
+}
+```
+
 ## Example
 
 1. Create contract
