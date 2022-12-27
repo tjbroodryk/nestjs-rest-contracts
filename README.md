@@ -6,7 +6,7 @@
   </a>
 </div>
 
-<h3 align="center">NestJS Type Safe Event Emitter Module</h3>
+<h3 align="center">NestJS Type Safe REST Contracts</h3>
 
 <div align="center">
   <a href="https://nestjs.com" target="_blank">
