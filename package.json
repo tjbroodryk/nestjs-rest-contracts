@@ -22,23 +22,20 @@
   },
   "keywords": [
     "nestjs",
-    "eventemitter",
-    "eventemitter2",
-    "events"
+    "contracts",
+    "ts-rest",
+    "zod"
   ],
   "repository": {
     "type": "git",
-    "url": "https://github.com/tjbroodryk/nestjs-typed-events"
+    "url": "https://github.com/tjbroodryk/nestjs-rest-contracts"
   },
-  "bugs": "https://github.com/tjbroodryk/nestjs-typed-events",
+  "bugs": "https://github.com/tjbroodryk/nestjs-rest-contracts",
   "peerDependencies": {
     "@nestjs/common": "^9.0.0",
     "@ts-rest/core": "^3.11.2"
   },
-  "dependencies": {
-    "@golevelup/nestjs-discovery": "^3.0.0",
-    "@golevelup/nestjs-modules": "^0.6.1"
-  },
+  "dependencies": {},
   "devDependencies": {
     "@commitlint/cli": "^17.3.0",
     "@commitlint/config-conventional": "^11.0.0",

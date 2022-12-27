@@ -14,70 +14,94 @@
   </a>
 </div>
 
-Type Safe, contract-driven event emitter module for a NestJS application.
+Type Safe, contract-driven REST Controllers for NestJS applications.
 
-Uses [zod](https://github.com/colinhacks/zod) object defintions to create typesafe event listeners and emitter, with automatic validation of args.
+Uses [zod](https://github.com/colinhacks/zod) object defintions and [ts-rest](https://github.com/ts-rest/ts-rest) to create typesafe REST endpoint contracts.
+
+**Note**
+This library is simply to force NestJS controllers to implement a ts-rest contract. The contracts and client lib themselves are still standard ts-rest.
 
 ## Features
 
-- End-to-end type safe wrapper for `eventemitter2`
-- Wild card events
-- Enforce events have a listener via `contract.required(<event>, <schema>)`
-- Optional event listeners via `contract.optional(<event>, <schema>)`
+- Type-Safe Controllers - Controllers are forced to implement the interface defined by the contract
+- Automatic request body, path param, and query parsing using the `zod` definitions defined in the contract.
+- Automatic parameter unmarshelling - no need for additional param decorators like `Body` or `ApiDecorator`. Its already handled.
+- Automatic binding of methods to endpoints - no need for additional decorators like `Post` or `Api`. Its already handled.
+- Utilities for creating response objects like `NoContent`, `Ok` etc that provide the correct status codes.
+- Combine contracts as per `ts-rest`.
 
 ## Installation
 
 ```bash
-npm i eventemitter2 nestjs-typed-events
+npm i @ts-rest/core nestjs-rest-contracts
 ```
-
-## Limitations
-
-- You can have multiple event listeners on one class **only** if the events have the same args signature.
 
 ## Example
 
-1. Register in `app.module`
+1. Create contract
 
 ```typescript
-import { EventContractBuilder, EventEmitterModule } from 'nestjs-typed-events';
+import { initContract } from '@ts-rest/core';
+import { z } from 'zod';
 
-const contract = EventContractBuilder.create()
-  .required(
-    'test.event',
-    z.object({
+export const c = initContract();
+
+export const stackContract = c.router({
+  update: {
+    method: 'POST',
+    path: '/stacks/:name/update',
+    responses: {
+      204: c.response<void>(),
+      409: c.response<{ message: string }>(),
+    },
+    body: z.object({
       foo: z.string(),
     }),
-  )
-  .optional('optional.event', z.string())
-  .build();
+    pathParams: {
+      name: z.string(),
+    },
+    summary: 'Run update for stack',
+  },
+});
+```
+
+2. Create your Controller
+
+```typescript
+import { stackContract } from './contract';
+import {
+  ContractController,
+  ArgsShape,
+  ResponseShape,
+  NoContent,
+  Conflict,
+} from 'nestjs-rest-contracts';
+
+type Contract = typeof stackContract;
+type Args<T extends keyof Contract> = ArgsShape<Contract[T]>;
+type Response<T extends keyof Contract> = ResponseShape<Contract[T]>;
+
+@ContractController(stackContract)
+export class StackController {
+  async update(args: Args<'update'>): Response<'update'> {
+    if (args.params.name === 'foo') {
+      return NoContent();
+    }
+    return Conflict('some message');
+  }
+}
+```
+
+3. Register your Controller
+
+```typescript
+import { Module } from '@nestjs/common';
+import { StackController } from './stack.controller';
 
 @Module({
-  imports: [
-    EventEmitterModule.forRoot(EventEmitterModule, {
-      contract,
-    }),
-  ],
+  controllers: [StackController],
 })
 export class AppModule {}
 ```
 
-2. Register your event listener
-
-```typescript
-import { Injectable } from '@nestjs/common';
-import {
-  EventListenerDecoratorFactory,
-  ContractEvent,
-} from 'nestjs-typed-events';
-
-const ContractEvent = EventListenerDecoratorFactory(contract);
-
-@Injectable()
-@ContractEvent('test.event')
-export class TestWatcher {
-  async handle(args: ContractEvent<typeof contract['test.event']>) {}
-}
-```
-
-3. Profit
+4. Profit
